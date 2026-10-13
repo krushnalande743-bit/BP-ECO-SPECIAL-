@@ -45,10 +45,13 @@ public class BpEcoSpecialClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (guiKey.consumeClick()) {
 
+                if (client.player == null) {
+                    continue;
+                }
+
                 if (client.gui.screen() instanceof BattlePieScreen) {
                     client.gui.setScreen(null);
-                } else if (client.gui.screen() == null
-                        && client.player != null) {
+                } else if (client.gui.screen() == null) {
                     client.gui.setScreen(new BattlePieScreen());
                 }
             }
@@ -64,7 +67,7 @@ public class BpEcoSpecialClient implements ClientModInitializer {
     }
 
     private static void renderHud(
-        GuiGraphicsExtractor context,
+        GuiGraphicsExtractor graphics,
         DeltaTracker tickCounter
     ) {
         Minecraft mc = Minecraft.getInstance();
@@ -76,19 +79,19 @@ public class BpEcoSpecialClient implements ClientModInitializer {
         int x = 10;
         int y = 10;
 
-        context.fill(
+        graphics.fill(
             x - 4, y - 4,
             x + 145, y + 17,
             0xCC101820
         );
 
-        context.fill(
+        graphics.fill(
             x - 4, y - 4,
             x - 1, y + 17,
             CYAN
         );
 
-        context.text(
+        graphics.text(
             mc.font,
             Component.literal("BP-ECO-SPECIAL"),
             x + 3, y,
@@ -99,7 +102,7 @@ public class BpEcoSpecialClient implements ClientModInitializer {
         y += 23;
 
         if (BattlePieScreen.isEnabled("Coordinates HUD")) {
-            context.text(
+            graphics.text(
                 mc.font,
                 Component.literal(String.format(
                     "XYZ: %.1f %.1f %.1f",
@@ -107,35 +110,29 @@ public class BpEcoSpecialClient implements ClientModInitializer {
                     mc.player.getY(),
                     mc.player.getZ()
                 )),
-                x, y,
-                WHITE,
-                true
+                x, y, WHITE, true
             );
 
             y += 13;
         }
 
         if (BattlePieScreen.isEnabled("FPS Counter")) {
-            context.text(
+            graphics.text(
                 mc.font,
                 Component.literal("FPS: " + mc.getFps()),
-                x, y,
-                CYAN,
-                true
+                x, y, CYAN, true
             );
 
             y += 13;
         }
 
         if (BattlePieScreen.isEnabled("Direction HUD")) {
-            context.text(
+            graphics.text(
                 mc.font,
                 Component.literal(
                     "Facing: " + getDirection(mc.player.getYRot())
                 ),
-                x, y,
-                WHITE,
-                true
+                x, y, WHITE, true
             );
         }
     }
