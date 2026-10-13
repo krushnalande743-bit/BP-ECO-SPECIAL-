@@ -13,7 +13,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import org.lwjgl.glfw.GLFW;
 
@@ -33,7 +33,7 @@ public class BpEcoSpecialClient implements ClientModInitializer {
     public void onInitializeClient() {
 
         KeyMapping.Category category = KeyMapping.Category.register(
-                ResourceLocation.fromNamespaceAndPath(
+                Identifier.fromNamespaceAndPath(
                         "bp_eco_special", "general"
                 )
         );
@@ -55,7 +55,7 @@ public class BpEcoSpecialClient implements ClientModInitializer {
 
         HudElementRegistry.attachElementBefore(
                 VanillaHudElements.CHAT,
-                ResourceLocation.fromNamespaceAndPath(
+                Identifier.fromNamespaceAndPath(
                         "bp_eco_special", "hud"
                 ),
                 BpEcoSpecialClient::renderHud
@@ -68,7 +68,7 @@ public class BpEcoSpecialClient implements ClientModInitializer {
     ) {
         Minecraft mc = Minecraft.getInstance();
 
-        if (mc.player == null || mc.options.hideGui) {
+        if (mc.player == null) {
             return;
         }
 
@@ -89,7 +89,7 @@ public class BpEcoSpecialClient implements ClientModInitializer {
 
         context.text(
                 mc.font,
-                "BP-ECO-SPECIAL",
+                Component.literal("BP-ECO-SPECIAL"),
                 x + 3, y,
                 CYAN,
                 true
@@ -100,12 +100,12 @@ public class BpEcoSpecialClient implements ClientModInitializer {
         if (showCoords) {
             context.text(
                     mc.font,
-                    String.format(
+                    Component.literal(String.format(
                             "XYZ: %.1f %.1f %.1f",
                             mc.player.getX(),
                             mc.player.getY(),
                             mc.player.getZ()
-                    ),
+                    )),
                     x, y,
                     WHITE,
                     true
@@ -117,7 +117,7 @@ public class BpEcoSpecialClient implements ClientModInitializer {
         if (showFPS) {
             context.text(
                     mc.font,
-                    "FPS: " + mc.getFps(),
+                    Component.literal("FPS: " + mc.getFps()),
                     x, y,
                     CYAN,
                     true
@@ -133,7 +133,7 @@ public class BpEcoSpecialClient implements ClientModInitializer {
 
             context.text(
                     mc.font,
-                    "Facing: " + direction,
+                    Component.literal("Facing: " + direction),
                     x, y,
                     WHITE,
                     true
@@ -183,7 +183,7 @@ public class BpEcoSpecialClient implements ClientModInitializer {
 
         context.text(
                 mc.font,
-                "BP-ECO-SPECIAL",
+                Component.literal("BP-ECO-SPECIAL"),
                 left + 12, top + 12,
                 CYAN,
                 true
@@ -191,7 +191,7 @@ public class BpEcoSpecialClient implements ClientModInitializer {
 
         context.text(
                 mc.font,
-                "Right Shift: Close GUI",
+                Component.literal("Right Shift: Close GUI"),
                 left + 12, top + 28,
                 WHITE,
                 false
@@ -199,8 +199,10 @@ public class BpEcoSpecialClient implements ClientModInitializer {
 
         context.text(
                 mc.font,
-                (showCoords ? "[ON] " : "[OFF] ")
-                        + "Coordinates HUD",
+                Component.literal(
+                        (showCoords ? "[ON] " : "[OFF] ")
+                                + "Coordinates HUD"
+                ),
                 left + 12, top + 52,
                 showCoords ? CYAN : WHITE,
                 true
@@ -208,8 +210,10 @@ public class BpEcoSpecialClient implements ClientModInitializer {
 
         context.text(
                 mc.font,
-                (showFPS ? "[ON] " : "[OFF] ")
-                        + "FPS Counter",
+                Component.literal(
+                        (showFPS ? "[ON] " : "[OFF] ")
+                                + "FPS Counter"
+                ),
                 left + 12, top + 75,
                 showFPS ? CYAN : WHITE,
                 true
@@ -217,8 +221,10 @@ public class BpEcoSpecialClient implements ClientModInitializer {
 
         context.text(
                 mc.font,
-                (showDirection ? "[ON] " : "[OFF] ")
-                        + "Direction HUD",
+                Component.literal(
+                        (showDirection ? "[ON] " : "[OFF] ")
+                                + "Direction HUD"
+                ),
                 left + 12, top + 98,
                 showDirection ? CYAN : WHITE,
                 true
@@ -226,7 +232,7 @@ public class BpEcoSpecialClient implements ClientModInitializer {
 
         context.text(
                 mc.font,
-                "Cyan Edition",
+                Component.literal("Cyan Edition"),
                 left + 12, top + 128,
                 CYAN,
                 false
