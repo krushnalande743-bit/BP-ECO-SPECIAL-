@@ -1,169 +1,207 @@
 package dev.bpeco.special;
 
-import com.mojang.blaze3d.platform.InputConstants;
-
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
-import net.fabricmc.fabric.api.client.rendering.v1.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.VanillaHudElements;
-
-import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 
 import org.lwjgl.glfw.GLFW;
 
-public class BpEcoSpecialClient implements ClientModInitializer {
+import java.util.HashMap;
+import java.util.Map;
 
-    private static KeyMapping guiKey;
+public class BattlePieScreen extends Screen {
 
-    private static boolean showCoords = true;
-    private static boolean showFPS = true;
-    private static boolean showDirection = true;
+    private static int activeTab = 0;
 
     private static final int CYAN = 0xFF35E5F2;
+    private static final int DARK = 0xFF101820;
     private static final int WHITE = 0xFFEAFBFF;
 
+    private static final String[] TABS = {
+        "Combat", "World", "TPs", "Game"
+    };
+
+    private static final String[][] FEATURES = {
+        {
+            "AutoMace",
+            "Aim Assist",
+            "AutoShieldBreak",
+            "AutoWindCharge",
+            "TriggerBot"
+        },
+        {
+            "Freecam",
+            "FullBright",
+            "Walk Trail",
+            "Chest ESP",
+            "Item ESP",
+            "Entity ESP",
+            "Xray"
+        },
+        {
+            "Auto TPahere",
+            "Suspicious Chunk Highlight"
+        },
+        {
+            "Coordinates HUD",
+            "FPS Counter",
+            "Direction HUD"
+        }
+    };
+
+    private static final Map<String, Boolean> STATES =
+        new HashMap<>();
+
+    public BattlePieScreen() {
+        super(Component.literal("BattlePie-ECO"));
+    }
+
+    public static boolean isEnabled(String feature) {
+        return STATES.getOrDefault(feature, false);
+    }
+
+    private static String buttonText(String feature) {
+        return feature + "  [" +
+            (isEnabled(feature) ? "ON" : "OFF") + "]";
+    }
+
     @Override
-    public void onInitializeClient() {
+    protected void init() {
+        int panelWidth = Math.min(380, this.width - 20);
+        int left = (this.width - panelWidth) / 2;
+        int top = Math.max(8, (this.height - 280) / 2);
 
-        KeyMapping.Category category =
-            KeyMapping.Category.register(
-                Identifier.fromNamespaceAndPath(
-                    "bp_eco_special",
-                    "general"
-                )
+        int gap = 4;
+        int tabWidth = (panelWidth - 24 - gap * 3) / 4;
+
+        for (int i = 0; i < TABS.length; i++) {
+            final int tab = i;
+
+            this.addRenderableWidget(
+                Button.builder(
+                    Component.literal(TABS[i]),
+                    button -> {
+                        activeTab = tab;
+                        Minecraft.getInstance().gui.setScreen(
+                            new BattlePieScreen()
+                        );
+                    }
+                ).bounds(
+                    left + 12 + i * (tabWidth + gap),
+                    top + 36,
+                    tabWidth,
+                    20
+                ).build()
             );
+        }
 
-        guiKey = KeyMappingHelper.registerKeyMapping(
-            new KeyMapping(
-                "key.bp_eco_special.open_gui",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_RIGHT_SHIFT,
-                category
-            )
-        );
+        String[] features = FEATURES[activeTab];
 
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (guiKey.consumeClick()) {
-                if (client.gui.screen() == null) {
-                    client.gui.setScreen(
-                        new BattlePieScreen()
-                    );
-                } else if (
-                    client.gui.screen() instanceof BattlePieScreen
-                ) {
-                    client.gui.setScreen(null);
-                }
-            }
-        });
+        for (int i = 0; i < features.length; i++) {
+            String feature = features[i];
 
-        HudElementRegistry.attachElementBefore(
-            VanillaHudElements.CHAT,
-            Identifier.fromNamespaceAndPath(
-                "bp_eco_special",
-                "hud"
-            ),
-            BpEcoSpecialClient::renderHud
+            this.addRenderableWidget(
+                Button.builder(
+                    Component.literal(buttonText(feature)),
+                    button -> {
+                        STATES.put(feature, !isEnabled(feature));
+                        button.setMessage(
+                            Component.literal(buttonText(feature))
+                        );
+                    }
+                ).bounds(
+                    left + 12,
+                    top + 64 + i * 22,
+                    panelWidth - 24,
+                    20
+                ).build()
+            );
+        }
+
+        this.addRenderableWidget(
+            Button.builder(
+                Component.literal("Close"),
+                button -> onClose()
+            ).bounds(
+                left + panelWidth - 102,
+                top + 238,
+                90,
+                20
+            ).build()
         );
     }
 
-    private static void renderHud(
-        GuiGraphicsExtractor context,
-        DeltaTracker tickCounter
+    @Override
+    public void extractRenderState(
+        GuiGraphicsExtractor graphics,
+        int mouseX,
+        int mouseY,
+        float delta
     ) {
-        Minecraft mc = Minecraft.getInstance();
-
-        if (mc.player == null) return;
-
-        if (mc.gui.screen() instanceof BattlePieScreen) return;
-
-        int x = 10;
-        int y = 10;
-
-        context.fill(
-            x - 4, y - 4,
-            x + 145, y + 17,
-            0xCC101820
+        super.extractRenderState(
+            graphics, mouseX, mouseY, delta
         );
 
-        context.fill(
-            x - 4, y - 4,
-            x - 1, y + 17,
+        int panelWidth = Math.min(380, this.width - 20);
+        int left = (this.width - panelWidth) / 2;
+        int top = Math.max(8, (this.height - 280) / 2);
+
+        graphics.fill(
+            left, top,
+            left + panelWidth, top + 28,
             CYAN
         );
 
-        context.text(
-            mc.font,
-            Component.literal("BATTLEPIE-ECO"),
-            x + 3, y,
-            CYAN,
+        graphics.fill(
+            left, top,
+            left + 3, top + 260,
+            CYAN
+        );
+
+        graphics.text(
+            this.font,
+            "BattlePie-ECO",
+            left + 12,
+            top + 9,
+            DARK,
             true
         );
 
-        y += 23;
-
-        if (showCoords) {
-            context.text(
-                mc.font,
-                Component.literal(
-                    String.format(
-                        "XYZ: %.1f %.1f %.1f",
-                        mc.player.getX(),
-                        mc.player.getY(),
-                        mc.player.getZ()
-                    )
-                ),
-                x, y,
-                WHITE,
-                true
-            );
-
-            y += 13;
-        }
-
-        if (showFPS) {
-            context.text(
-                mc.font,
-                Component.literal("FPS: " + mc.getFps()),
-                x, y,
-                CYAN,
-                true
-            );
-
-            y += 13;
-        }
-
-        if (showDirection) {
-            String direction = getDirection(
-                mc.player.getYRot()
-            );
-
-            context.text(
-                mc.font,
-                Component.literal("Facing: " + direction),
-                x, y,
-                WHITE,
-                true
-            );
-        }
+        graphics.text(
+            this.font,
+            "Prototype - toggles are not connected yet",
+            left + 12,
+            top + 264,
+            WHITE,
+            false
+        );
     }
 
-    private static String getDirection(float yaw) {
-        int index = Math.floorMod(
-            Math.round(yaw / 90.0f),
-            4
-        );
+    @Override
+    public boolean keyPressed(
+        int keyCode,
+        int scanCode,
+        int modifiers
+    ) {
+        if (keyCode == GLFW.GLFW_KEY_RIGHT_SHIFT) {
+            onClose();
+            return true;
+        }
 
-        return switch (index) {
-            case 0 -> "South";
-            case 1 -> "West";
-            case 2 -> "North";
-            default -> "East";
-        };
+        return super.keyPressed(
+            keyCode, scanCode, modifiers
+        );
+    }
+
+    @Override
+    public void onClose() {
+        Minecraft.getInstance().gui.setScreen(null);
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
     }
 }
