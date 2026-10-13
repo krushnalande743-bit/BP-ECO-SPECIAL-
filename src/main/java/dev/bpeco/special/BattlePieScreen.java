@@ -80,7 +80,7 @@ public class BattlePieScreen extends Screen {
         int gap = 4;
         int tabWidth = (panelWidth - 24 - gap * 3) / 4;
 
-        // Tabs
+        // Four tabs
         for (int i = 0; i < TABS.length; i++) {
             final int tab = i;
 
@@ -89,6 +89,7 @@ public class BattlePieScreen extends Screen {
                     Component.literal(TABS[i]),
                     button -> {
                         activeTab = tab;
+
                         Minecraft.getInstance().gui.setScreen(
                             new BattlePieScreen()
                         );
@@ -112,7 +113,10 @@ public class BattlePieScreen extends Screen {
                 Button.builder(
                     Component.literal(getButtonText(feature)),
                     button -> {
-                        STATES.put(feature, !isEnabled(feature));
+                        STATES.put(
+                            feature,
+                            !isEnabled(feature)
+                        );
 
                         button.setMessage(
                             Component.literal(getButtonText(feature))
@@ -148,18 +152,11 @@ public class BattlePieScreen extends Screen {
         int mouseY,
         float delta
     ) {
-        super.extractRenderState(
-            graphics,
-            mouseX,
-            mouseY,
-            delta
-        );
-
         int panelWidth = Math.min(380, this.width - 20);
         int left = (this.width - panelWidth) / 2;
         int top = Math.max(8, (this.height - 280) / 2);
 
-        // Main panel
+        // Main dark panel
         graphics.fill(
             left, top,
             left + panelWidth, top + 280,
@@ -173,22 +170,33 @@ public class BattlePieScreen extends Screen {
             CYAN
         );
 
-        // Side accent
+        // Left cyan accent
         graphics.fill(
             left, top,
             left + 3, top + 280,
             CYAN
         );
 
+        // Title: slightly thicker, same dark colour
         graphics.text(
             this.font,
             "BattlePie-ECO",
             left + 12,
             top + 9,
             DARK,
-            true
+            false
         );
 
+        graphics.text(
+            this.font,
+            "BattlePie-ECO",
+            left + 13,
+            top + 9,
+            DARK,
+            false
+        );
+
+        // Footer
         graphics.text(
             this.font,
             "Right Shift: Close GUI",
@@ -205,6 +213,15 @@ public class BattlePieScreen extends Screen {
             top + 266,
             MUTED,
             false
+        );
+
+        // IMPORTANT:
+        // Render widgets AFTER the panel so they remain visible.
+        super.extractRenderState(
+            graphics,
+            mouseX,
+            mouseY,
+            delta
         );
     }
 
