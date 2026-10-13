@@ -20,11 +20,6 @@ import org.lwjgl.glfw.GLFW;
 public class BpEcoSpecialClient implements ClientModInitializer {
 
     private static KeyMapping guiKey;
-    private static boolean guiOpen = false;
-
-    private static boolean showCoords = true;
-    private static boolean showFPS = true;
-    private static boolean showDirection = true;
 
     private static final int CYAN = 0xFF35E5F2;
     private static final int WHITE = 0xFFEAFBFF;
@@ -33,38 +28,44 @@ public class BpEcoSpecialClient implements ClientModInitializer {
     public void onInitializeClient() {
 
         KeyMapping.Category category = KeyMapping.Category.register(
-                Identifier.fromNamespaceAndPath(
-                        "bp_eco_special", "general"
-                )
+            Identifier.fromNamespaceAndPath(
+                "bp_eco_special", "general"
+            )
         );
 
         guiKey = KeyMappingHelper.registerKeyMapping(
-                new KeyMapping(
-                        "key.bp_eco_special.open_gui",
-                        InputConstants.Type.KEYSYM,
-                        GLFW.GLFW_KEY_RIGHT_SHIFT,
-                        category
-                )
+            new KeyMapping(
+                "key.bp_eco_special.open_gui",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_RIGHT_SHIFT,
+                category
+            )
         );
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (guiKey.consumeClick()) {
-                guiOpen = !guiOpen;
+
+                if (client.gui.screen() instanceof BattlePieScreen) {
+                    client.gui.setScreen(null);
+                } else if (client.gui.screen() == null
+                        && client.player != null) {
+                    client.gui.setScreen(new BattlePieScreen());
+                }
             }
         });
 
         HudElementRegistry.attachElementBefore(
-                VanillaHudElements.CHAT,
-                Identifier.fromNamespaceAndPath(
-                        "bp_eco_special", "hud"
-                ),
-                BpEcoSpecialClient::renderHud
+            VanillaHudElements.CHAT,
+            Identifier.fromNamespaceAndPath(
+                "bp_eco_special", "hud"
+            ),
+            BpEcoSpecialClient::renderHud
         );
     }
 
     private static void renderHud(
-            GuiGraphicsExtractor context,
-            DeltaTracker tickCounter
+        GuiGraphicsExtractor context,
+        DeltaTracker tickCounter
     ) {
         Minecraft mc = Minecraft.getInstance();
 
@@ -76,173 +77,73 @@ public class BpEcoSpecialClient implements ClientModInitializer {
         int y = 10;
 
         context.fill(
-                x - 4, y - 4,
-                x + 145, y + 17,
-                0xCC101820
+            x - 4, y - 4,
+            x + 145, y + 17,
+            0xCC101820
         );
 
         context.fill(
-                x - 4, y - 4,
-                x - 1, y + 17,
-                CYAN
+            x - 4, y - 4,
+            x - 1, y + 17,
+            CYAN
         );
 
         context.text(
-                mc.font,
-                Component.literal("BP-ECO-SPECIAL"),
-                x + 3, y,
-                CYAN,
-                true
+            mc.font,
+            Component.literal("BP-ECO-SPECIAL"),
+            x + 3, y,
+            CYAN,
+            true
         );
 
         y += 23;
 
-        if (showCoords) {
+        if (BattlePieScreen.isEnabled("Coordinates HUD")) {
             context.text(
-                    mc.font,
-                    Component.literal(String.format(
-                            "XYZ: %.1f %.1f %.1f",
-                            mc.player.getX(),
-                            mc.player.getY(),
-                            mc.player.getZ()
-                    )),
-                    x, y,
-                    WHITE,
-                    true
-            );
-
-            y += 13;
-        }
-
-        if (showFPS) {
-            context.text(
-                    mc.font,
-                    Component.literal("FPS: " + mc.getFps()),
-                    x, y,
-                    CYAN,
-                    true
-            );
-
-            y += 13;
-        }
-
-        if (showDirection) {
-            String direction = getDirection(
-                    mc.player.getYRot()
-            );
-
-            context.text(
-                    mc.font,
-                    Component.literal("Facing: " + direction),
-                    x, y,
-                    WHITE,
-                    true
-            );
-        }
-
-        if (guiOpen) {
-            renderGui(context, mc);
-        }
-    }
-
-    private static void renderGui(
-            GuiGraphicsExtractor context,
-            Minecraft mc
-    ) {
-        int width = mc.getWindow().getGuiScaledWidth();
-        int height = mc.getWindow().getGuiScaledHeight();
-
-        int panelWidth = 240;
-        int panelHeight = 150;
-
-        int left = (width - panelWidth) / 2;
-        int top = (height - panelHeight) / 2;
-
-        context.fill(
-                0, 0, width, height,
-                0x66000000
-        );
-
-        context.fill(
-                left, top,
-                left + panelWidth, top + panelHeight,
-                0xF0101820
-        );
-
-        context.fill(
-                left, top,
-                left + panelWidth, top + 3,
-                CYAN
-        );
-
-        context.fill(
-                left, top,
-                left + 3, top + panelHeight,
-                CYAN
-        );
-
-        context.text(
                 mc.font,
-                Component.literal("BP-ECO-SPECIAL"),
-                left + 12, top + 12,
-                CYAN,
-                true
-        );
-
-        context.text(
-                mc.font,
-                Component.literal("Right Shift: Close GUI"),
-                left + 12, top + 28,
+                Component.literal(String.format(
+                    "XYZ: %.1f %.1f %.1f",
+                    mc.player.getX(),
+                    mc.player.getY(),
+                    mc.player.getZ()
+                )),
+                x, y,
                 WHITE,
-                false
-        );
-
-        context.text(
-                mc.font,
-                Component.literal(
-                        (showCoords ? "[ON] " : "[OFF] ")
-                                + "Coordinates HUD"
-                ),
-                left + 12, top + 52,
-                showCoords ? CYAN : WHITE,
                 true
-        );
+            );
 
-        context.text(
-                mc.font,
-                Component.literal(
-                        (showFPS ? "[ON] " : "[OFF] ")
-                                + "FPS Counter"
-                ),
-                left + 12, top + 75,
-                showFPS ? CYAN : WHITE,
-                true
-        );
+            y += 13;
+        }
 
-        context.text(
+        if (BattlePieScreen.isEnabled("FPS Counter")) {
+            context.text(
                 mc.font,
-                Component.literal(
-                        (showDirection ? "[ON] " : "[OFF] ")
-                                + "Direction HUD"
-                ),
-                left + 12, top + 98,
-                showDirection ? CYAN : WHITE,
-                true
-        );
-
-        context.text(
-                mc.font,
-                Component.literal("Cyan Edition"),
-                left + 12, top + 128,
+                Component.literal("FPS: " + mc.getFps()),
+                x, y,
                 CYAN,
-                false
-        );
+                true
+            );
+
+            y += 13;
+        }
+
+        if (BattlePieScreen.isEnabled("Direction HUD")) {
+            context.text(
+                mc.font,
+                Component.literal(
+                    "Facing: " + getDirection(mc.player.getYRot())
+                ),
+                x, y,
+                WHITE,
+                true
+            );
+        }
     }
 
     private static String getDirection(float yaw) {
         int index = Math.floorMod(
-                Math.round(yaw / 90.0f),
-                4
+            Math.round(yaw / 90.0f),
+            4
         );
 
         return switch (index) {
