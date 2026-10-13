@@ -80,7 +80,7 @@ public class BattlePieScreen extends Screen {
         int gap = 4;
         int tabWidth = (panelWidth - 24 - gap * 3) / 4;
 
-        // Section tabs
+        // Four section tabs
         for (int i = 0; i < TABS.length; i++) {
             final int tab = i;
 
@@ -89,7 +89,9 @@ public class BattlePieScreen extends Screen {
                     Component.literal(TABS[i]),
                     button -> {
                         activeTab = tab;
-                        Minecraft.getInstance().setScreen(
+
+                        // Minecraft 26.2 screen API
+                        Minecraft.getInstance().gui.setScreen(
                             new BattlePieScreen()
                         );
                     }
@@ -102,7 +104,7 @@ public class BattlePieScreen extends Screen {
             );
         }
 
-        // Feature buttons
+        // Feature buttons for the selected tab
         String[] features = FEATURES[activeTab];
 
         for (int i = 0; i < features.length; i++) {
@@ -166,7 +168,7 @@ public class BattlePieScreen extends Screen {
             DARK
         );
 
-        // Cyan header
+        // Cyan title bar
         graphics.fill(
             left, top,
             left + panelWidth, top + 28,
@@ -212,7 +214,7 @@ public class BattlePieScreen extends Screen {
 
     @Override
     public void onClose() {
-        Minecraft.getInstance().setScreen(null);
+        Minecraft.getInstance().gui.setScreen(null);
     }
 
     @Override
