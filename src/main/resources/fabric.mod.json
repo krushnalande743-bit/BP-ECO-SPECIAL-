@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "bp_eco_special",
+  "version": "${version}",
+  "name": "BP-ECO-SPECIAL",
+  "description": "Cyan HUD client mod",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.bpeco.special.BpEcoSpecialClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}
