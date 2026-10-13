@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 
 import org.lwjgl.glfw.GLFW;
@@ -62,7 +63,7 @@ public class BattlePieScreen extends Screen {
         return STATES.getOrDefault(feature, false);
     }
 
-    private static String buttonText(String feature) {
+    private static String getButtonText(String feature) {
         return feature + "  [" +
             (isEnabled(feature) ? "ON" : "OFF") + "]";
     }
@@ -104,11 +105,11 @@ public class BattlePieScreen extends Screen {
 
             this.addRenderableWidget(
                 Button.builder(
-                    Component.literal(buttonText(feature)),
+                    Component.literal(getButtonText(feature)),
                     button -> {
                         STATES.put(feature, !isEnabled(feature));
                         button.setMessage(
-                            Component.literal(buttonText(feature))
+                            Component.literal(getButtonText(feature))
                         );
                     }
                 ).bounds(
@@ -150,13 +151,19 @@ public class BattlePieScreen extends Screen {
 
         graphics.fill(
             left, top,
+            left + panelWidth, top + 280,
+            DARK
+        );
+
+        graphics.fill(
+            left, top,
             left + panelWidth, top + 28,
             CYAN
         );
 
         graphics.fill(
             left, top,
-            left + 3, top + 260,
+            left + 3, top + 280,
             CYAN
         );
 
@@ -171,28 +178,31 @@ public class BattlePieScreen extends Screen {
 
         graphics.text(
             this.font,
+            "Right Shift: Close GUI",
+            left + 12,
+            top + 250,
+            WHITE,
+            false
+        );
+
+        graphics.text(
+            this.font,
             "Prototype - toggles are not connected yet",
             left + 12,
-            top + 264,
-            WHITE,
+            top + 266,
+            CYAN,
             false
         );
     }
 
     @Override
-    public boolean keyPressed(
-        int keyCode,
-        int scanCode,
-        int modifiers
-    ) {
-        if (keyCode == GLFW.GLFW_KEY_RIGHT_SHIFT) {
+    public boolean keyPressed(KeyEvent event) {
+        if (event.key() == GLFW.GLFW_KEY_RIGHT_SHIFT) {
             onClose();
             return true;
         }
 
-        return super.keyPressed(
-            keyCode, scanCode, modifiers
-        );
+        return super.keyPressed(event);
     }
 
     @Override
